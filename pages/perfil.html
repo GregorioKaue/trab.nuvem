@@ -1,0 +1,638 @@
+<!DOCTYPE html> <!-- Declara que o arquivo é HTML5 -->
+<html lang="pt-BR"> <!-- Raiz do documento, idioma português do Brasil -->
+<head>
+  <meta charset="UTF-8"> <!-- Codificação que permite acentos e emojis -->
+  <meta name="viewport" content="width=device-width, initial-scale=1"> <!-- Faz a página se ajustar ao celular -->
+  <title>Meu perfil | EduConnect</title> <!-- Título mostrado na aba do navegador -->
+
+  <!-- Carrega o CSS do Bootstrap pela internet (CDN) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+  <style>
+    :root { /* Variáveis de cor reutilizadas, iguais às outras páginas */
+      --primary: #2457d6; /* Azul principal do portal */
+      --bg: #f4f7fc;      /* Cinza-azulado do fundo */
+    }
+
+    body {
+      background: var(--bg);        /* Aplica a cor de fundo */
+      font-family: Arial, sans-serif; /* Fonte padrão do portal */
+      color: #202b40;               /* Cor do texto */
+    }
+
+    .navbar { background: #fff; } /* Barra superior branca */
+
+    .brand { /* Logotipo EduConnect */
+      color: var(--primary);
+      font-size: 1.4rem;
+      font-weight: 800;
+    }
+
+    .hero { /* Faixa azul em degradê do topo do perfil */
+      background: linear-gradient(120deg, #2457d6, #6489f0);
+      color: white;
+      border-radius: 20px;
+      padding: 32px;
+    }
+
+    .foto-perfil { /* Foto do usuário em formato circular */
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;        /* Deixa a imagem redonda */
+      object-fit: cover;         /* Recorta a imagem sem distorcer */
+      border: 4px solid #fff;    /* Borda branca ao redor */
+      background: #fff;
+    }
+
+    .resource-card { /* Cartões com o mesmo estilo da página inicial */
+      border: 0;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px #243b6520;
+      height: 100%;
+    }
+
+    .section-title { font-weight: 700; } /* Títulos de seção em negrito */
+
+    .indicador { /* Número grande dos cartões-resumo */
+      font-size: 2.2rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .progress { height: 10px; border-radius: 10px; }
+
+    .nota-baixa { color: #b45309; font-weight: 700; } /* Nota abaixo de 6 */
+    .nota-vazia { color: #9aa5b8; }                  /* Mês ainda sem nota */
+
+    .barra-mes { /* Colunas do gráfico de média mensal */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      height: 150px;
+      flex: 1;
+    }
+    .barra-mes .coluna {
+      width: 70%;
+      border-radius: 8px 8px 0 0;
+      background: var(--primary);
+      min-height: 3px;
+    }
+    .barra-mes .coluna.baixa { background: #f59e0b; }
+
+    .nav-pills .nav-link { color: var(--primary); font-weight: 600; }
+    .nav-pills .nav-link.active { background: var(--primary); color: #fff; }
+
+    footer { color: #68758a; } /* Cor do rodapé */
+  </style>
+</head>
+
+<body>
+<!-- Barra de navegação fixa no topo -->
+<nav class="navbar shadow-sm sticky-top">
+  <div class="container d-flex justify-content-between"> <!-- Logotipo à esquerda, botões à direita -->
+    <a class="navbar-brand brand" href="../Indexescola.html">EduConnect</a> <!-- Link para a página inicial -->
+    <div class="d-flex gap-2">
+      <a href="documentos.html" class="btn btn-outline-primary btn-sm">Documentos</a> <!-- Vai para a página de documentos -->
+      <button id="btnSair" class="btn btn-primary btn-sm">Sair</button> <!-- Encerra a sessão -->
+    </div>
+  </div>
+</nav>
+
+<main class="container py-4 py-md-5"> <!-- Conteúdo principal -->
+
+  <!-- Cabeçalho do perfil com foto, dados e seletor de ano letivo -->
+  <section class="hero mb-4">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-4">
+      <div class="d-flex align-items-center flex-wrap gap-4"> <!-- Foto e texto lado a lado -->
+        <img id="foto" class="foto-perfil" alt="Foto do usuário"> <!-- A imagem é definida pelo JavaScript -->
+        <div>
+          <span class="badge text-bg-light text-primary mb-2">PERFIL DO ALUNO</span> <!-- Etiqueta -->
+          <h1 class="fw-bold h2 mb-1" id="nome"></h1> <!-- Nome do usuário -->
+          <p class="mb-2" id="detalhes"></p> <!-- E-mail, turma e matrícula -->
+          <label class="btn btn-light btn-sm mb-0"> <!-- Botão que abre o seletor de imagem -->
+            Alterar foto
+            <input type="file" id="novaFoto" accept="image/*" hidden> <!-- Input escondido, só aceita imagens -->
+          </label>
+        </div>
+      </div>
+      <div> <!-- Seletor de ano letivo: vale para frequência e notas por mês/semestre/ano -->
+        <label for="anoLetivo" class="form-label mb-1 small">Ano letivo</label>
+        <select id="anoLetivo" class="form-select"></select>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cartões-resumo do ano selecionado -->
+  <section class="mb-5">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="card resource-card p-3">
+          <small class="text-muted">📅 Frequência geral</small>
+          <div class="indicador mt-2" id="resFreq">—</div>
+          <small class="text-muted" id="resFreqTxt"></small>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card resource-card p-3">
+          <small class="text-muted">📊 Média geral</small>
+          <div class="indicador mt-2" id="resMedia">—</div>
+          <small class="text-muted" id="resMediaTxt"></small>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card resource-card p-3">
+          <small class="text-muted">📁 Documentos entregues</small>
+          <div class="indicador mt-2" id="resDocs">—</div>
+          <small class="text-muted" id="resDocsTxt"></small>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Seção de notas por bimestre (a tabela que já existia no perfil) -->
+  <section class="mb-5">
+    <h2 class="section-title mb-3">📊 Minhas notas</h2>
+    <div class="card resource-card p-3">
+      <div class="table-responsive"> <!-- Permite rolar a tabela no celular -->
+        <table class="table align-middle mb-0">
+          <thead> <!-- Cabeçalho da tabela -->
+            <tr>
+              <th>Disciplina</th><th>1º Bim.</th><th>2º Bim.</th>
+              <th>3º Bim.</th><th>Média</th><th>Situação</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaNotas"></tbody> <!-- Linhas criadas pelo JavaScript -->
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FREQUÊNCIA ===================== -->
+  <section class="mb-5" id="frequencia">
+    <h2 class="section-title mb-3">📅 Frequência escolar</h2>
+    <div class="row g-4">
+      <div class="col-lg-7">
+        <div class="card resource-card p-3">
+          <h5 class="mb-3">Por mês</h5>
+          <div class="table-responsive">
+            <table class="table align-middle mb-0">
+              <thead>
+                <tr><th>Mês</th><th>Aulas</th><th>Faltas</th><th style="min-width:140px">Frequência</th></tr>
+              </thead>
+              <tbody id="tabelaFreqMes"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="card resource-card p-3">
+          <h5 class="mb-3">Por disciplina</h5>
+          <div id="freqDisciplinas"></div>
+          <small class="text-muted mt-3">
+            A frequência mínima exigida é de 75% das aulas. Julho é recesso escolar.
+          </small>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== NOTAS POR ANO, SEMESTRE E MÊS ===================== -->
+  <section class="mb-5" id="notas">
+    <h2 class="section-title mb-3">📈 Notas por ano, semestre e mês</h2>
+    <div class="card resource-card p-3">
+
+      <!-- Abas para escolher como ver as notas -->
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+        <ul class="nav nav-pills" id="abasNotas">
+          <li class="nav-item"><button class="nav-link active" data-modo="mes">Por mês</button></li>
+          <li class="nav-item"><button class="nav-link" data-modo="sem">Por semestre</button></li>
+          <li class="nav-item"><button class="nav-link" data-modo="ano">Resumo do ano</button></li>
+        </ul>
+        <!-- Filtro de semestre: aparece só na visão mensal -->
+        <div id="filtroSemestre" class="d-flex align-items-center gap-2">
+          <label for="semestre" class="small mb-0">Período</label>
+          <select id="semestre" class="form-select form-select-sm w-auto">
+            <option value="todos">Ano todo</option>
+            <option value="0">1º semestre (Fev–Jun)</option>
+            <option value="1">2º semestre (Ago–Dez)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead id="cabecaNotas"></thead>
+          <tbody id="corpoNotas"></tbody>
+        </table>
+      </div>
+
+      <!-- Gráfico simples da média geral por mês -->
+      <div id="blocoGrafico" class="mt-4">
+        <h6 class="mb-3">Média geral por mês</h6>
+        <div class="d-flex gap-2 align-items-end" id="grafico"></div>
+      </div>
+      <small class="text-muted mt-3">
+        Média mínima para aprovação: 6,0. Notas abaixo disso aparecem em destaque.
+      </small>
+    </div>
+  </section>
+
+  <!-- ===================== DOCUMENTOS ===================== -->
+  <section class="mb-5" id="documentos">
+    <h2 class="section-title mb-3">📁 Documentos</h2>
+    <div class="card resource-card p-3">
+      <p class="px-2 pt-2 mb-2">Verifique os documentos já enviados e envie novos documentos para a instituição.</p>
+      <div class="progress mb-3" role="progressbar" aria-label="Documentos entregues">
+        <div class="progress-bar bg-success" id="barraDocs" style="width:0%"></div>
+      </div>
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr><th>Documento</th><th>Situação</th><th>Data de entrega</th></tr>
+          </thead>
+          <tbody id="tabelaDocs"></tbody>
+        </table>
+      </div>
+      <a href="documentos.html" class="btn btn-primary align-self-start mt-3">Acessar documentos</a> <!-- Link para a página de documentos -->
+    </div>
+  </section>
+</main>
+
+<footer class="container text-center py-4">
+  EduConnect © 2026 — Portal Digital Escolar <!-- Rodapé padrão -->
+</footer>
+
+<script>
+  // Lê da sessão o usuário gravado pela página de login (texto JSON).
+  const usuario = JSON.parse(sessionStorage.getItem("usuarioLogado"));
+
+  // Se ninguém fez login, volta para a tela de login e interrompe o script.
+  if (!usuario) {
+    window.location.href = "login.html";
+  }
+
+  // ---------- Notas por bimestre (tabela original do perfil) ----------
+  // Notas de exemplo (demonstração). Em um sistema real viriam do servidor.
+  const notasBim = [
+    { disciplina: "Português",  bim: [8.0, 7.5, 9.0] },
+    { disciplina: "Matemática", bim: [6.5, 7.0, 5.5] },
+    { disciplina: "História",   bim: [9.0, 8.5, 8.0] },
+    { disciplina: "Ciências",   bim: [5.0, 6.0, 4.5] }
+  ];
+
+  // Imagem padrão (SVG embutido) usada quando o usuário não tem foto.
+  const fotoPadrao = "data:image/svg+xml;utf8," + encodeURIComponent(
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'>" +
+    "<rect width='120' height='120' fill='#dbe5fb'/>" +          // Fundo azul claro
+    "<circle cx='60' cy='46' r='22' fill='#2457d6'/>" +          // Cabeça
+    "<ellipse cx='60' cy='104' rx='38' ry='28' fill='#2457d6'/>" + // Ombros
+    "</svg>");
+
+  // Preenche o cabeçalho com os dados do usuário.
+  document.getElementById("nome").textContent = usuario.nome;
+  document.getElementById("detalhes").textContent =
+    usuario.email + " • " + usuario.turma + " • Matrícula " + usuario.matricula;
+
+  // Usa a foto salva pelo usuário ou a imagem padrão.
+  const foto = document.getElementById("foto");
+  foto.src = localStorage.getItem("fotoPerfil") || fotoPadrao;
+
+  // Quando o usuário escolhe uma nova foto...
+  document.getElementById("novaFoto").addEventListener("change", evento => {
+    const arquivo = evento.target.files[0]; // Pega o primeiro arquivo escolhido
+    if (!arquivo) return;                   // Sai se nada foi escolhido
+
+    const leitor = new FileReader();        // Objeto que lê o arquivo no navegador
+    leitor.onload = () => {                 // Executa quando a leitura termina
+      foto.src = leitor.result;             // Mostra a nova foto na tela
+      try {
+        localStorage.setItem("fotoPerfil", leitor.result); // Guarda para as próximas visitas
+      } catch (e) { /* Imagem grande demais para guardar: só mostra na tela */ }
+    };
+    leitor.readAsDataURL(arquivo);          // Converte a imagem em texto (base64)
+  });
+
+  // Monta a tabela de notas por bimestre.
+  const corpoBim = document.getElementById("tabelaNotas");
+  notasBim.forEach(item => {
+    // Soma as notas e divide pela quantidade para obter a média.
+    const mediaBim = item.bim.reduce((a, b) => a + b, 0) / item.bim.length;
+    const aprovado = mediaBim >= 6; // Média mínima para aprovação: 6
+
+    const linha = document.createElement("tr"); // Cria uma linha <tr>
+    // Preenche as células: disciplina, notas, média e selo de situação.
+    linha.innerHTML =
+      "<td class='fw-semibold'>" + item.disciplina + "</td>" +
+      item.bim.map(n => "<td>" + n.toFixed(1) + "</td>").join("") +
+      "<td class='fw-bold'>" + mediaBim.toFixed(1) + "</td>" +
+      "<td><span class='badge " + (aprovado ? "text-bg-success" : "text-bg-warning") + "'>" +
+      (aprovado ? "Aprovado" : "Recuperação") + "</span></td>";
+    corpoBim.appendChild(linha); // Adiciona a linha na tabela
+  });
+
+  // ---------- Dados de demonstração de frequência, notas mensais e documentos ----------
+  // Em um sistema real, tudo isto viria do servidor da escola.
+  // Meses letivos (julho é recesso): posições 0–4 = 1º semestre, 5–9 = 2º semestre.
+  const MESES = ["Fev", "Mar", "Abr", "Mai", "Jun", "Ago", "Set", "Out", "Nov", "Dez"];
+  const DISC = ["Português", "Matemática", "História", "Ciências"];
+  const AULAS_MES = { "Português": 16, "Matemática": 16, "História": 8, "Ciências": 8 }; // Aulas por mês
+
+  // null = mês que ainda não aconteceu (sem nota e sem faltas registradas).
+  const DADOS = {
+    2025: {
+      notas: {
+        "Português":  [7.5, 8.0, 7.0, 8.5, 8.0, 7.5, 8.0, 9.0, 8.5, 9.0],
+        "Matemática": [6.0, 6.5, 7.0, 6.0, 5.5, 6.5, 7.0, 6.5, 7.5, 7.0],
+        "História":   [8.5, 9.0, 8.0, 8.5, 9.0, 8.0, 8.5, 9.0, 8.5, 9.0],
+        "Ciências":   [5.5, 6.0, 5.0, 6.5, 6.0, 5.5, 6.5, 7.0, 6.0, 6.5]
+      },
+      faltas: {
+        "Português":  [0, 1, 0, 2, 1, 0, 1, 0, 2, 1],
+        "Matemática": [1, 0, 2, 2, 0, 1, 1, 0, 2, 2],
+        "História":   [0, 0, 1, 0, 1, 0, 0, 1, 0, 0],
+        "Ciências":   [1, 0, 1, 2, 2, 1, 0, 1, 1, 2]
+      }
+    },
+    2026: {
+      notas: {
+        "Português":  [8.0, 7.5, 8.5, 9.0, 8.0, 8.5, 9.0, null, null, null],
+        "Matemática": [6.5, 7.0, 6.0, 5.5, 6.5, 7.0, 6.0, null, null, null],
+        "História":   [9.0, 8.5, 8.0, 9.0, 8.5, 8.0, 8.5, null, null, null],
+        "Ciências":   [5.0, 6.0, 5.5, 4.5, 5.5, 6.0, 5.0, null, null, null]
+      },
+      faltas: {
+        "Português":  [0, 0, 1, 0, 2, 1, 0, null, null, null],
+        "Matemática": [0, 1, 0, 1, 1, 0, 2, null, null, null],
+        "História":   [0, 0, 0, 1, 0, 0, 1, null, null, null],
+        "Ciências":   [1, 1, 0, 0, 2, 1, 0, null, null, null]
+      }
+    }
+  };
+
+  // Documentos exigidos pela escola. situacao: "entregue", "analise" ou "pendente".
+  const DOCUMENTOS = [
+    { nome: "Certidão de nascimento",         situacao: "entregue", data: "2026-02-03" },
+    { nome: "RG do aluno",                    situacao: "entregue", data: "2026-02-03" },
+    { nome: "CPF do aluno",                   situacao: "entregue", data: "2026-02-03" },
+    { nome: "Comprovante de residência",      situacao: "entregue", data: "2026-02-05" },
+    { nome: "Histórico escolar",              situacao: "entregue", data: "2026-02-10" },
+    { nome: "Cartão de vacinação",            situacao: "analise",  data: "2026-09-18" },
+    { nome: "Foto 3x4",                       situacao: "entregue", data: "2026-02-05" },
+    { nome: "Termo de autorização de imagem", situacao: "pendente", data: null }
+  ];
+
+  // ---------- Funções auxiliares ----------
+  // Média ignorando meses sem nota (null). Retorna null se não houver nenhuma.
+  function media(lista) {
+    const v = lista.filter(n => n !== null);
+    return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
+  }
+  const fmt = n => (n === null ? "—" : n.toFixed(1).replace(".", ",")); // Nota em formato brasileiro
+  const completo = lista => lista.every(n => n !== null);               // Todos os meses têm nota?
+
+  // Célula de nota: vazia, abaixo da média ou normal.
+  function celulaNota(n, negrito) {
+    if (n === null) return "<td class='nota-vazia'>—</td>";
+    const classe = n < 6 ? "nota-baixa" : (negrito ? "fw-bold" : "");
+    return "<td class='" + classe + "'>" + fmt(n) + "</td>";
+  }
+
+  // Cor da barra de frequência: ≥85 verde, 75–85 amarelo, <75 vermelho.
+  function corFreq(p) {
+    return p >= 85 ? "bg-success" : (p >= 75 ? "bg-warning" : "bg-danger");
+  }
+  function barraFreq(p) {
+    return "<div class='d-flex align-items-center gap-2'>" +
+      "<div class='progress flex-grow-1'><div class='progress-bar " + corFreq(p) +
+      "' style='width:" + p.toFixed(0) + "%'></div></div>" +
+      "<small class='fw-semibold'>" + p.toFixed(0) + "%</small></div>";
+  }
+
+  // Formata "2026-02-03" como "03/02/2026".
+  function dataBR(iso) {
+    const [a, m, d] = iso.split("-");
+    return d + "/" + m + "/" + a;
+  }
+
+  // ---------- Estado da tela ----------
+  let ano = Math.max(...Object.keys(DADOS).map(Number)); // Começa no ano mais recente
+  let modo = "mes";                                       // Aba de notas ativa
+
+  // Preenche o seletor de ano letivo.
+  const seletorAno = document.getElementById("anoLetivo");
+  Object.keys(DADOS).sort().reverse().forEach(a => {
+    const op = document.createElement("option");
+    op.value = a;
+    op.textContent = a;
+    seletorAno.appendChild(op);
+  });
+  seletorAno.value = ano;
+
+  // ---------- Frequência ----------
+  function renderFrequencia() {
+    const faltas = DADOS[ano].faltas;
+    const corpo = document.getElementById("tabelaFreqMes");
+    corpo.replaceChildren();
+
+    let totalAulas = 0, totalFaltas = 0;
+
+    MESES.forEach((mes, i) => {
+      if (faltas[DISC[0]][i] === null) return; // Mês futuro: não mostra
+      const aulas = DISC.reduce((s, d) => s + AULAS_MES[d], 0);
+      const f = DISC.reduce((s, d) => s + faltas[d][i], 0);
+      totalAulas += aulas;
+      totalFaltas += f;
+      const pct = (aulas - f) / aulas * 100;
+
+      const linha = document.createElement("tr");
+      linha.innerHTML =
+        "<td class='fw-semibold'>" + mes + "</td><td>" + aulas + "</td><td>" + f +
+        "</td><td>" + barraFreq(pct) + "</td>";
+      corpo.appendChild(linha);
+    });
+
+    // Frequência por disciplina (acumulada no ano).
+    const bloco = document.getElementById("freqDisciplinas");
+    bloco.replaceChildren();
+    DISC.forEach(d => {
+      const meses = faltas[d].filter(n => n !== null);
+      const aulas = meses.length * AULAS_MES[d];
+      const f = meses.reduce((a, b) => a + b, 0);
+      const pct = (aulas - f) / aulas * 100;
+      const div = document.createElement("div");
+      div.className = "mb-3";
+      div.innerHTML =
+        "<div class='d-flex justify-content-between'><span class='fw-semibold'>" + d +
+        "</span><small class='text-muted'>" + f + " faltas em " + aulas + " aulas</small></div>" +
+        barraFreq(pct);
+      bloco.appendChild(div);
+    });
+
+    // Cartão-resumo.
+    const geral = (totalAulas - totalFaltas) / totalAulas * 100;
+    document.getElementById("resFreq").textContent = geral.toFixed(1).replace(".", ",") + "%";
+    document.getElementById("resFreqTxt").textContent =
+      totalFaltas + " faltas em " + totalAulas + " aulas" +
+      (geral < 75 ? " — abaixo do mínimo de 75%" : " — dentro do mínimo exigido");
+  }
+
+  // ---------- Notas por ano, semestre e mês ----------
+  function renderNotas() {
+    const notas = DADOS[ano].notas;
+    const cabeca = document.getElementById("cabecaNotas");
+    const corpo = document.getElementById("corpoNotas");
+    corpo.replaceChildren();
+
+    // O filtro de semestre só faz sentido na visão mensal.
+    document.getElementById("filtroSemestre").style.display = modo === "mes" ? "" : "none";
+
+    if (modo === "mes") {
+      // Quais meses mostrar, conforme o filtro de semestre.
+      const sel = document.getElementById("semestre").value;
+      const indices = MESES.map((_, i) => i).filter(i =>
+        sel === "todos" || (sel === "0" ? i < 5 : i >= 5));
+
+      cabeca.innerHTML = "<tr><th>Disciplina</th>" +
+        indices.map(i => "<th>" + MESES[i] + "</th>").join("") + "<th>Média</th></tr>";
+
+      DISC.forEach(d => {
+        const periodo = indices.map(i => notas[d][i]);
+        const linha = document.createElement("tr");
+        linha.innerHTML = "<td class='fw-semibold'>" + d + "</td>" +
+          periodo.map(n => celulaNota(n, false)).join("") + celulaNota(media(periodo), true);
+        corpo.appendChild(linha);
+      });
+
+      // Linha com a média geral de cada mês.
+      const geral = indices.map(i => media(DISC.map(d => notas[d][i])));
+      const linhaGeral = document.createElement("tr");
+      linhaGeral.className = "table-light";
+      linhaGeral.innerHTML = "<td class='fw-bold'>Média geral</td>" +
+        geral.map(n => celulaNota(n, true)).join("") + celulaNota(media(geral), true);
+      corpo.appendChild(linhaGeral);
+
+    } else {
+      // Semestral e resumo anual usam as mesmas colunas de semestre.
+      const resumo = modo === "ano";
+      cabeca.innerHTML = "<tr><th>Disciplina</th><th>1º semestre</th><th>2º semestre</th>" +
+        (resumo ? "<th>Média anual</th>" : "") + "<th>Situação</th></tr>";
+
+      DISC.forEach(d => {
+        const s1 = notas[d].slice(0, 5), s2 = notas[d].slice(5);
+        const m1 = media(s1), m2 = media(s2), anual = media(notas[d]);
+        // Na visão semestral, a situação considera o semestre mais recente com nota.
+        const base = resumo ? anual : (m2 !== null ? m2 : m1);
+        const fechado = resumo ? completo(notas[d]) : (m2 !== null ? completo(s2) : completo(s1));
+        const ok = base >= 6;
+
+        let selo;
+        if (fechado) {
+          selo = "<span class='badge " + (ok ? "text-bg-success" : "text-bg-warning") + "'>" +
+                 (ok ? "Aprovado" : "Recuperação") + "</span>";
+        } else {
+          selo = "<span class='badge " + (ok ? "text-bg-info" : "text-bg-warning") + "'>" +
+                 (ok ? "Em andamento · na média" : "Em andamento · abaixo da média") + "</span>";
+        }
+
+        const linha = document.createElement("tr");
+        linha.innerHTML = "<td class='fw-semibold'>" + d + "</td>" +
+          celulaNota(m1, false) + celulaNota(m2, false) +
+          (resumo ? celulaNota(anual, true) : "") + "<td>" + selo + "</td>";
+        corpo.appendChild(linha);
+      });
+    }
+
+    // Gráfico de colunas com a média geral de cada mês (só na visão mensal).
+    const grafico = document.getElementById("grafico");
+    document.getElementById("blocoGrafico").style.display = modo === "mes" ? "" : "none";
+    grafico.replaceChildren();
+    MESES.forEach((mes, i) => {
+      const m = media(DISC.map(d => notas[d][i]));
+      const col = document.createElement("div");
+      col.className = "barra-mes";
+      col.innerHTML = "<small class='text-muted'>" + fmt(m) + "</small>" +
+        "<div class='coluna " + (m !== null && m < 6 ? "baixa" : "") + "' style='height:" +
+        (m === null ? 0 : m * 10) + "%'></div><small class='fw-semibold'>" + mes + "</small>";
+      grafico.appendChild(col);
+    });
+
+    // Cartão-resumo da média geral do ano.
+    const todas = DISC.map(d => media(notas[d]));
+    const geralAno = media(todas);
+    const encerrado = DISC.every(d => completo(notas[d]));
+    document.getElementById("resMedia").textContent = fmt(geralAno);
+    document.getElementById("resMediaTxt").textContent =
+      (encerrado ? "Ano letivo encerrado" : "Ano letivo em andamento") +
+      (geralAno >= 6 ? " — na média" : " — abaixo da média");
+  }
+
+  // ---------- Documentos ----------
+  function renderDocumentos() {
+    const corpo = document.getElementById("tabelaDocs");
+    corpo.replaceChildren();
+
+    const selos = {
+      entregue: "<span class='badge text-bg-success'>Entregue</span>",
+      analise:  "<span class='badge text-bg-info'>Em análise</span>",
+      pendente: "<span class='badge text-bg-warning'>Pendente</span>"
+    };
+
+    DOCUMENTOS.forEach(doc => {
+      const linha = document.createElement("tr");
+      const nome = document.createElement("td");
+      nome.className = "fw-semibold";
+      nome.textContent = doc.nome;                 // textContent evita injeção de HTML
+      const sit = document.createElement("td");
+      sit.innerHTML = selos[doc.situacao];
+      const data = document.createElement("td");
+      data.textContent = doc.data ? dataBR(doc.data) : "—";
+      linha.append(nome, sit, data);
+      corpo.appendChild(linha);
+    });
+
+    // Conta como "entregue" o que já foi recebido pela escola (inclui os em análise).
+    const recebidos = DOCUMENTOS.filter(d => d.situacao !== "pendente").length;
+    const pendentes = DOCUMENTOS.length - recebidos;
+    document.getElementById("barraDocs").style.width = (recebidos / DOCUMENTOS.length * 100) + "%";
+    document.getElementById("resDocs").textContent = recebidos + " de " + DOCUMENTOS.length;
+    document.getElementById("resDocsTxt").textContent =
+      pendentes ? pendentes + " pendente(s)" : "Documentação completa";
+  }
+
+  // ---------- Eventos ----------
+  seletorAno.addEventListener("change", () => {
+    ano = Number(seletorAno.value);
+    renderFrequencia();
+    renderNotas();
+  });
+
+  document.getElementById("semestre").addEventListener("change", renderNotas);
+
+  document.querySelectorAll("#abasNotas button").forEach(botao => {
+    botao.addEventListener("click", () => {
+      document.querySelectorAll("#abasNotas button").forEach(b => b.classList.remove("active"));
+      botao.classList.add("active");
+      modo = botao.dataset.modo;
+      renderNotas();
+    });
+  });
+
+  // Botão Sair: apaga a sessão e volta ao login.
+  document.getElementById("btnSair").addEventListener("click", () => {
+    sessionStorage.removeItem("usuarioLogado"); // Remove o usuário da sessão
+    window.location.href = "login.html";        // Redireciona para o login
+  });
+
+  // ---------- Primeira exibição ----------
+  renderFrequencia();
+  renderNotas();
+  renderDocumentos();
+</script>
+
+<!-- Script do Bootstrap (componentes interativos) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+</body>
+</html>

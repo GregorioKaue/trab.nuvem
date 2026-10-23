@@ -1,0 +1,322 @@
+<!-- Declara que o documento utiliza HTML5. -->
+<!DOCTYPE html>
+<!-- Define o idioma principal da página como português do Brasil. -->
+<html lang="pt-BR">
+<!-- Início dos metadados e configurações da página. -->
+<head>
+  <!-- Permite exibir corretamente caracteres acentuados. -->
+  <meta charset="UTF-8">
+  <!-- Ajusta o layout à largura da tela em celulares e outros dispositivos. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Define o título exibido na aba do navegador. -->
+  <title>EduConnect | Portal Escolar</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+  <!-- Início dos estilos CSS usados para personalizar o visual. -->
+  <style>
+    :root {
+      --primary: #2457d6;
+      --bg: #f4f7fc;
+    }
+
+    body {
+      background: var(--bg);
+      font-family: Arial, sans-serif;
+      color: #202b40;
+    }
+
+    .navbar {
+      background: #fff;
+    }
+
+    .brand {
+      color: var(--primary);
+      font-size: 1.4rem;
+      font-weight: 800;
+    }
+
+    .hero {
+      background: linear-gradient(120deg, #2457d6, #6489f0);
+      color: white;
+      border-radius: 20px;
+      padding: 36px;
+    }
+
+    .resource-card {
+      border: 0;
+      border-radius: 16px;
+      transition: transform .2s, box-shadow .2s;
+      height: 100%;
+    }
+
+    .resource-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px #243b6520;
+    }
+
+    .resource-icon {
+      font-size: 2rem;
+    }
+
+    .section-title {
+      font-weight: 700;
+    }
+
+    footer {
+      color: #68758a;
+    }
+  </style>
+</head>
+
+<!-- Início do conteúdo visível da página. -->
+<body>
+<!-- Barra de navegação superior do portal. -->
+<nav class="navbar navbar-expand-lg shadow-sm sticky-top">
+  <div class="container">
+    <a class="navbar-brand brand" href="#">EduConnect</a>
+
+    <button class="navbar-toggler" type="button"
+      data-bs-toggle="collapse" data-bs-target="#menu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="menu">
+      <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3">
+        <li class="nav-item">
+          <a class="nav-link" href="pages/secretaria.html">Ferramentas</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#documentos">Documentos</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="pages/secretaria.html">Área acadêmica</a>
+        </li>
+
+
+        <li class="nav-item">
+          <!-- Abre a página de login que está dentro da pasta "pages" -->
+          <a class="btn btn-primary" href="pages/login.html">Entrar</a>
+        </li>
+             </ul>
+    </div>
+  </div>
+</nav>
+
+
+<!-- Área principal do portal, centralizada e com espaçamento responsivo. -->
+<main class="container py-4 py-md-5">
+  <section class="hero mb-5">
+    <span class="badge text-bg-light text-primary mb-3">
+      PORTAL DIGITAL ESCOLAR
+    </span>
+    <h1 class="fw-bold">Sua escola, conectada.</h1>
+    <p class="lead">
+      Um só lugar para aprender, ensinar e compartilhar conhecimento.
+    </p>
+    <a href="#recursos" class="btn btn-light btn-lg mt-2">
+      Explorar ferramentas
+    </a>
+  </section>
+
+  <!-- Seção de cards das ferramentas digitais. -->
+  <section id="recursos" class="mb-5">
+    <h2 class="section-title mb-3">Ferramentas digitais</h2>
+
+    <input id="pesquisa" class="form-control mb-4"
+      placeholder="Pesquisar ferramentas..."
+      aria-label="Pesquisar ferramentas">
+
+    <div class="row g-4" id="listaRecursos">
+      <div class="col-md-6 col-lg-3">
+        <div class="card resource-card p-3">
+          <div class="card-body">
+            <div class="resource-icon">📚</div>
+            <h5 class="mt-3">Sala de aula virtual</h5>
+            <p>Acesse aulas, atividades e materiais didáticos.</p>
+            <!-- href leva ao Google Classroom; target="_blank" abre em nova aba;
+                 rel="noopener noreferrer" protege a página original -->
+            <a href="https://edu.google.com/workspace-for-education/products/classroom/?hl=pt-br"
+              target="_blank" rel="noopener noreferrer"
+              class="btn btn-outline-primary">
+              Acessar
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3">
+        <div class="card resource-card p-3">
+          <div class="card-body">
+            <div class="resource-icon">🎥</div>
+            <h5 class="mt-3">Videoconferências</h5>
+            <p>Entre em reuniões e aulas ao vivo.</p>
+            <!-- Link direto para a página oficial do Google Meet. -->
+            <!-- href define o endereço que será aberto ao clicar em "Acessar". -->
+            <!-- target="_blank" abre o Meet em uma nova aba, mantendo o portal aberto. -->
+            <!-- rel="noopener noreferrer" melhora a segurança ao abrir outra aba. -->
+            <a href="https://workspace.google.com/products/meet/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn btn-outline-primary">
+              Acessar
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3">
+        <div class="card resource-card p-3">
+          <div class="card-body">
+            <div class="resource-icon">📝</div>
+            <h5 class="mt-3">Atividades</h5>
+            <p>Consulte tarefas e organize seus estudos.</p>
+            <a href="#" class="btn btn-outline-primary"
+              onclick="abrirRecurso(event, 'Atividades')">
+              Acessar
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3">
+        <div class="card resource-card p-3">
+          <div class="card-body">
+            <div class="resource-icon">🤝</div>
+            <h5 class="mt-3">Colaboração</h5>
+            <p>Compartilhe ideias e trabalhe em equipe.</p>
+            <a href="#" class="btn btn-outline-primary"
+              onclick="abrirRecurso(event, 'Colaboração')">
+              Acessar
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p id="semResultados" class="text-muted mt-3" hidden>
+      Nenhuma ferramenta encontrada.
+    </p>
+  </section>
+
+  <!-- Seção para selecionar e listar arquivos locais. -->
+  <section id="documentos" class="mb-5">
+    <h2 class="section-title mb-3">Documentos escolares</h2>
+
+    <div class="card resource-card p-4">
+      <p>Selecione arquivos para visualizá-los nesta sessão.</p>
+      <input type="file" id="arquivos" class="form-control"
+        multiple>
+      <ul id="listaArquivos" class="list-group list-group-flush mt-3">
+      </ul>
+      <small class="text-muted mt-2">
+        Demonstração local: os arquivos não são enviados nem armazenados
+        na nuvem.
+      </small>
+    </div>
+  </section>
+
+  <!-- Seção de atalhos para sistemas acadêmicos. -->
+  <section id="academico" class="mb-5">
+    <h2 class="section-title mb-3">Sistemas acadêmicos</h2>
+
+    <div class="row g-3">
+      <div class="col-md-4">
+        <a href="#" class="card resource-card p-4 text-decoration-none"
+          onclick="abrirRecurso(event, 'Notas e boletim')">
+          <h5>📊 Notas e boletim</h5>
+          <p class="text-secondary mb-0">Consulte seu desempenho.</p>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="#" class="card resource-card p-4 text-decoration-none"
+          onclick="abrirRecurso(event, 'Frequência')">
+          <h5>📅 Frequência</h5>
+          <p class="text-secondary mb-0">Acompanhe suas presenças.</p>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="pages/secretaria.html" class="card resource-card p-4 text-decoration-none">
+          <h5>🏫 Secretaria</h5>
+          <p class="text-secondary mb-0">Serviços administrativos.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="alert alert-info">
+    <strong>Importante:</strong> personalize os links com os endereços
+    oficiais dos sistemas utilizados pela sua escola.
+  </div>
+</main>
+
+<!-- Rodapé do portal. -->
+<footer class="container text-center py-4">
+  EduConnect © 2026 — Portal Digital Escolar
+</footer>
+
+<script>
+  // Pesquisa ferramentas pelo nome e pela descrição.
+  const pesquisa = document.getElementById("pesquisa"); // Obtém o campo de pesquisa da página.
+  const recursos = [ // Cria uma lista com os elementos que representam cada card.
+    ...document.querySelectorAll("#listaRecursos > div") // Seleciona os cards dentro da lista de recursos.
+  ];
+
+  pesquisa.addEventListener("input", () => { // Executa a pesquisa sempre que o texto muda.
+    const termo = pesquisa.value.toLocaleLowerCase("pt-BR"); // Lê o texto digitado e converte para minúsculas.
+    let encontrados = 0; // Inicializa a contagem de cards que correspondem à pesquisa.
+
+    recursos.forEach(item => { // Percorre todos os cards de ferramentas.
+      const corresponde = item.textContent // Lê o texto visível do card.
+        .toLocaleLowerCase("pt-BR").includes(termo); // Verifica se o card contém o termo pesquisado.
+
+      item.hidden = !corresponde; // Oculta cards que não correspondem ao termo.
+      if (corresponde) encontrados++; // Soma um resultado quando há correspondência.
+    });
+
+    document.getElementById("semResultados").hidden = // Obtém a mensagem de ausência de resultados.
+      encontrados !== 0; // Exibe a mensagem somente quando nenhum card corresponde.
+  });
+
+  // Exibe um aviso para os recursos que ainda não têm endereço configurado.
+  // O card Videoconferências não usa esta função: seu link abre o Google Meet diretamente.
+  function abrirRecurso(evento, nome) {
+    evento.preventDefault(); // Impede o comportamento padrão do link com href="#" para os recursos não configurados.
+    alert("Configure o endereço oficial de: " + nome); // Informa qual recurso precisa de um endereço oficial.
+  }
+
+  // Demonstração de seleção de documentos locais.
+  document.getElementById("arquivos") // Obtém o seletor de arquivos da página.
+    .addEventListener("change", evento => { // Executa quando o usuário seleciona ou altera arquivos.
+      const lista = document.getElementById("listaArquivos"); // Obtém a lista onde os arquivos serão mostrados.
+      lista.replaceChildren(); // Limpa os itens exibidos anteriormente.
+
+      [...evento.target.files].forEach(arquivo => { // Percorre cada arquivo selecionado.
+        const item = document.createElement("li"); // Cria um item de lista para o arquivo.
+        item.className = // Define classes do Bootstrap para organizar o item.
+          "list-group-item d-flex justify-content-between";
+
+        const nome = document.createElement("span"); // Cria um elemento para o nome do arquivo.
+        nome.textContent = arquivo.name; // Insere o nome do arquivo como texto.
+
+        const tamanho = document.createElement("small"); // Cria um elemento para exibir o tamanho.
+        tamanho.className = "text-muted"; // Aplica uma cor discreta ao tamanho.
+        tamanho.textContent = // Calcula e formata o tamanho do arquivo em kilobytes.
+          (arquivo.size / 1024).toFixed(1) + " KB";
+
+        item.append(nome, tamanho); // Coloca o nome e o tamanho dentro do item da lista.
+        lista.appendChild(item); // Adiciona o item à lista visível da página.
+      });
+    });
+
+  // Função de exemplo para avisar que a autenticação ainda precisa ser integrada.
+  function mostrarLogin() {
+    alert("A autenticação deverá ser integrada ao sistema da escola."); // Mostra o aviso ao usuário.
+  }
+</script>
+
+<!-- Carrega o JavaScript do Bootstrap para componentes como o menu responsivo. -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+</body>
+</html>

@@ -1,0 +1,684 @@
+<!DOCTYPE html> <!-- Declara que o arquivo é HTML5 -->
+<html lang="pt-BR"> <!-- Raiz do documento, idioma português do Brasil -->
+<head> <!-- Início do cabeçalho (informações que não aparecem na tela) -->
+  <meta charset="UTF-8"> <!-- Codificação que permite acentos e emojis -->
+  <meta name="viewport" content="width=device-width, initial-scale=1"> <!-- Faz a página se ajustar ao celular -->
+  <title>Painel do professor | EduConnect</title> <!-- Título mostrado na aba do navegador -->
+
+  <!-- Carrega o CSS do Bootstrap pela internet (CDN), igual às outras páginas -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"> <!-- Indica que o arquivo é uma folha de estilos -->
+
+  <style> /* Início do CSS próprio da página */
+    :root { /* Variáveis de cor reutilizadas, iguais às do perfil.html */
+      --primary: #2457d6; /* Azul principal do portal */
+      --bg: #f4f7fc;      /* Cinza-azulado do fundo */
+    }
+
+    body { /* Estilo geral da página */
+      background: var(--bg);          /* Aplica a cor de fundo */
+      font-family: Arial, sans-serif; /* Fonte padrão do portal */
+      color: #202b40;                 /* Cor do texto */
+    }
+
+    .navbar { background: #fff; } /* Barra superior branca */
+
+    .brand { /* Logotipo EduConnect */
+      color: var(--primary); /* Azul principal */
+      font-size: 1.4rem;     /* Tamanho do texto */
+      font-weight: 800;      /* Letra bem grossa */
+    }
+
+    .hero { /* Faixa azul em degradê do topo */
+      background: linear-gradient(120deg, #2457d6, #6489f0); /* Degradê de azul escuro para claro */
+      color: white;          /* Texto branco */
+      border-radius: 20px;   /* Cantos arredondados */
+      padding: 32px;         /* Espaço interno */
+    }
+
+    .resource-card { /* Cartões com o mesmo estilo do perfil */
+      border: 0;                              /* Remove a borda padrão */
+      border-radius: 16px;                    /* Cantos arredondados */
+      box-shadow: 0 10px 25px #243b6520;      /* Sombra suave azulada */
+    }
+
+    .section-title { font-weight: 700; } /* Títulos em negrito */
+    .indicador { font-size: 2.2rem; font-weight: 800; line-height: 1; } /* Número grande dos cartões-resumo */
+
+    .nav-pills .nav-link { color: var(--primary); font-weight: 600; } /* Abas inativas em azul */
+    .nav-pills .nav-link.active { background: var(--primary); color: #fff; } /* Aba ativa com fundo azul */
+
+    .lista-alunos { max-height: 460px; overflow-y: auto; } /* Lista com altura máxima e barra de rolagem */
+    .aluno-item { /* Cada aluno da lista */
+      border: 0;                     /* Sem borda */
+      border-radius: 12px !important; /* Cantos arredondados (força sobre o Bootstrap) */
+      margin-bottom: 6px;            /* Espaço entre os itens */
+      text-align: left;              /* Texto alinhado à esquerda */
+    }
+    .aluno-item.active { background: var(--primary); border-color: var(--primary); } /* Aluno selecionado em azul */
+    .aluno-item.active small { color: #dbe5fb !important; } /* Texto pequeno claro sobre o azul */
+
+    .campo { min-width: 70px; text-align: center; } /* Campos de nota/falta: largura mínima e número centralizado */
+    .tabela-lancamento th { white-space: nowrap; font-size: .85rem; } /* Cabeçalho da tabela sem quebra de linha */
+    .tabela-lancamento td { padding: .35rem .4rem; } /* Células mais compactas */
+    .nota-baixa { color: #b45309; font-weight: 700; } /* Nota abaixo de 6 em destaque */
+
+    footer { color: #68758a; } /* Cor do rodapé */
+  </style> <!-- Fim do CSS -->
+</head> <!-- Fim do cabeçalho -->
+
+<body> <!-- Início do conteúdo visível -->
+<!-- Barra de navegação fixa no topo -->
+<nav class="navbar shadow-sm sticky-top"> <!-- Barra branca com sombra, que acompanha a rolagem -->
+  <div class="container d-flex justify-content-between"> <!-- Logotipo à esquerda, itens à direita -->
+    <a class="navbar-brand brand" href="../Indexescola.html">EduConnect</a> <!-- Link para a página inicial -->
+    <div class="d-flex align-items-center gap-3"> <!-- Grupo da direita -->
+      <span class="small text-muted d-none d-md-inline" id="nomeProf"></span> <!-- Nome do professor (preenchido pelo JS); some no celular -->
+      <button id="btnSair" class="btn btn-primary btn-sm">Sair</button> <!-- Encerra a sessão -->
+    </div>
+  </div>
+</nav>
+
+<main class="container py-4 py-md-5"> <!-- Conteúdo principal -->
+
+  <!-- Cabeçalho com título e seletor de ano letivo -->
+  <section class="hero mb-4"> <!-- Faixa azul em degradê -->
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-4"> <!-- Texto de um lado, seletor do outro -->
+      <div> <!-- Bloco de texto -->
+        <span class="badge text-bg-light text-primary mb-2">PAINEL DO PROFESSOR</span> <!-- Etiqueta -->
+        <h1 class="fw-bold h2 mb-1">Registro de informações dos alunos</h1> <!-- Título da página -->
+        <p class="mb-0">Tudo o que você salvar aqui fica disponível no perfil de cada aluno.</p> <!-- Explicação -->
+      </div>
+      <div class="d-flex align-items-end gap-2"> <!-- Seletor de ano e botão lado a lado -->
+        <div>
+          <label for="anoLetivo" class="form-label mb-1 small">Ano letivo</label> <!-- Rótulo do seletor -->
+          <select id="anoLetivo" class="form-select"></select> <!-- Opções criadas pelo JS -->
+        </div>
+        <button id="btnNovoAno" class="btn btn-light" title="Cadastrar um novo ano letivo">+ Ano</button> <!-- Cria um novo ano letivo -->
+      </div>
+    </div>
+  </section>
+
+  <div class="row g-4"> <!-- Duas colunas: lista de alunos e editor -->
+
+    <!-- ===================== LISTA DE ALUNOS ===================== -->
+    <div class="col-lg-4"> <!-- Coluna da esquerda (1/3 da largura em telas grandes) -->
+      <div class="card resource-card p-3"> <!-- Cartão da lista -->
+        <div class="d-flex justify-content-between align-items-center mb-3"> <!-- Título e botão na mesma linha -->
+          <h2 class="section-title h5 mb-0">👩‍🎓 Alunos</h2> <!-- Título da seção -->
+          <button class="btn btn-primary btn-sm" id="btnNovoAluno">+ Novo aluno</button> <!-- Abre o formulário de cadastro -->
+        </div>
+        <input type="search" id="busca" class="form-control mb-2" placeholder="Buscar por nome ou matrícula"> <!-- Campo de busca -->
+        <select id="filtroTurma" class="form-select mb-3"></select> <!-- Filtro de turma (opções criadas pelo JS) -->
+        <div class="lista-alunos list-group" id="listaAlunos"></div> <!-- Lista de alunos criada pelo JS -->
+      </div>
+    </div>
+
+    <!-- ===================== EDITOR DO ALUNO ===================== -->
+    <div class="col-lg-8"> <!-- Coluna da direita (2/3 da largura) -->
+
+      <!-- Mensagem exibida quando nenhum aluno está selecionado -->
+      <div id="editorVazio" class="card resource-card p-5 text-center text-muted">
+        Selecione um aluno na lista ou cadastre um novo para começar.
+      </div>
+
+      <div id="editor" class="d-none"> <!-- Editor completo; começa escondido (d-none) -->
+
+        <!-- Dados e resumo do aluno selecionado -->
+        <div class="card resource-card p-3 mb-4">
+          <div class="d-flex justify-content-between align-items-start flex-wrap gap-2"> <!-- Nome à esquerda, botões à direita -->
+            <div>
+              <h2 class="section-title h4 mb-1" id="edNome"></h2> <!-- Nome do aluno (JS) -->
+              <div class="text-muted small" id="edDetalhes"></div> <!-- E-mail, turma, matrícula e ano (JS) -->
+            </div>
+            <div class="d-flex gap-2"> <!-- Botões de ação -->
+              <button class="btn btn-outline-primary btn-sm" id="btnEditarAluno">Editar dados</button> <!-- Abre o formulário preenchido -->
+              <button class="btn btn-outline-danger btn-sm" id="btnExcluirAluno">Excluir</button> <!-- Exclui o aluno -->
+            </div>
+          </div>
+          <div class="row g-3 mt-1"> <!-- Três indicadores lado a lado -->
+            <div class="col-md-4"><small class="text-muted">📅 Frequência geral</small><div class="indicador mt-1" id="resFreq">—</div></div> <!-- Frequência -->
+            <div class="col-md-4"><small class="text-muted">📊 Média geral</small><div class="indicador mt-1" id="resMedia">—</div></div> <!-- Média -->
+            <div class="col-md-4"><small class="text-muted">📁 Documentos recebidos</small><div class="indicador mt-1" id="resDocs">—</div></div> <!-- Documentos -->
+          </div>
+        </div>
+
+        <!-- Abas de lançamento de informações -->
+        <div class="card resource-card p-3">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3"> <!-- Abas à esquerda, botão salvar à direita -->
+            <ul class="nav nav-pills" role="tablist"> <!-- Lista de abas do Bootstrap -->
+              <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#abaBim">📊 Notas bimestrais</button></li> <!-- Aba 1 (aberta ao carregar) -->
+              <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#abaMes">📈 Notas mensais</button></li> <!-- Aba 2 -->
+              <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#abaFaltas">📅 Faltas</button></li> <!-- Aba 3 -->
+              <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#abaDocs">📁 Documentos</button></li> <!-- Aba 4 -->
+            </ul>
+            <button class="btn btn-success" id="btnSalvar">💾 Salvar alterações</button> <!-- Grava tudo o que foi digitado -->
+          </div>
+
+          <div class="tab-content"> <!-- Conteúdo de cada aba -->
+            <!-- Notas por bimestre (tabela "Minhas notas" do perfil) -->
+            <div class="tab-pane fade show active" id="abaBim"> <!-- Painel da aba 1 (visível) -->
+              <div class="table-responsive"> <!-- Permite rolar a tabela no celular -->
+                <table class="table align-middle tabela-lancamento mb-0">
+                  <thead><tr><th>Disciplina</th><th>1º Bim.</th><th>2º Bim.</th><th>3º Bim.</th><th>Média</th></tr></thead> <!-- Cabeçalho -->
+                  <tbody id="corpoBim"></tbody> <!-- Linhas criadas pelo JS -->
+                </table>
+              </div>
+              <small class="text-muted d-block mt-3">Notas de 0 a 10. Deixe em branco o bimestre que ainda não aconteceu.</small> <!-- Instrução -->
+            </div>
+
+            <!-- Notas por mês -->
+            <div class="tab-pane fade" id="abaMes"> <!-- Painel da aba 2 (escondido) -->
+              <div class="table-responsive">
+                <table class="table align-middle tabela-lancamento mb-0">
+                  <thead id="cabecaMes"></thead> <!-- Cabeçalho com os meses (JS) -->
+                  <tbody id="corpoMes"></tbody> <!-- Campos de nota (JS) -->
+                </table>
+              </div>
+              <small class="text-muted d-block mt-3">Notas de 0 a 10. Deixe em branco os meses que ainda não aconteceram. Julho é recesso.</small>
+            </div>
+
+            <!-- Faltas por mês -->
+            <div class="tab-pane fade" id="abaFaltas"> <!-- Painel da aba 3 -->
+              <div class="table-responsive">
+                <table class="table align-middle tabela-lancamento mb-0">
+                  <thead id="cabecaFaltas"></thead> <!-- Cabeçalho com os meses (JS) -->
+                  <tbody id="corpoFaltas"></tbody> <!-- Campos de faltas (JS) -->
+                </table>
+              </div>
+              <small class="text-muted d-block mt-3">
+                Informe o número de faltas do mês (0 = nenhuma falta). Mês em branco = ainda não aconteceu e não aparece na frequência do aluno.
+                O limite de cada campo é o total de aulas da disciplina no mês.
+              </small>
+            </div>
+
+            <!-- Documentos -->
+            <div class="tab-pane fade" id="abaDocs"> <!-- Painel da aba 4 -->
+              <div class="table-responsive">
+                <table class="table align-middle tabela-lancamento mb-0">
+                  <thead><tr><th>Documento</th><th style="min-width:160px">Situação</th><th style="min-width:160px">Data de entrega</th></tr></thead>
+                  <tbody id="corpoDocs"></tbody> <!-- Linhas de documentos (JS) -->
+                </table>
+              </div>
+              <small class="text-muted d-block mt-3">Ao marcar “Entregue” ou “Em análise”, a data de hoje é preenchida se o campo estiver vazio.</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="container text-center py-4"> <!-- Rodapé -->
+  EduConnect © 2026 — Portal Digital Escolar <!-- Texto padrão do portal -->
+</footer>
+
+<!-- ===================== JANELA (MODAL): CADASTRO DE ALUNO ===================== -->
+<div class="modal fade" id="modalAluno" tabindex="-1" aria-hidden="true"> <!-- Janela escondida até ser aberta -->
+  <div class="modal-dialog"> <!-- Caixa centralizada -->
+    <form class="modal-content" id="formAluno" novalidate> <!-- Formulário; novalidate = validamos pelo JS -->
+      <div class="modal-header"> <!-- Topo da janela -->
+        <h5 class="modal-title" id="tituloModal">Novo aluno</h5> <!-- Título (muda ao editar) -->
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button> <!-- Botão X -->
+      </div>
+      <div class="modal-body"> <!-- Corpo da janela -->
+        <input type="hidden" id="fId"> <!-- Guarda o id do aluno (vazio = novo aluno) -->
+        <div class="mb-3">
+          <label class="form-label" for="fNome">Nome completo</label>
+          <input class="form-control" id="fNome" required> <!-- Campo do nome -->
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="fEmail">E-mail</label>
+          <input type="email" class="form-control" id="fEmail" required> <!-- Campo do e-mail -->
+        </div>
+        <div class="row g-3"> <!-- Turma e matrícula lado a lado -->
+          <div class="col-6">
+            <label class="form-label" for="fTurma">Turma</label>
+            <input class="form-control" id="fTurma" placeholder="Ex.: 8º Ano A" required> <!-- Campo da turma -->
+          </div>
+          <div class="col-6">
+            <label class="form-label" for="fMatricula">Matrícula</label>
+            <input class="form-control" id="fMatricula" required> <!-- Campo da matrícula -->
+          </div>
+        </div>
+        <div class="text-danger small mt-3 d-none" id="erroForm"></div> <!-- Mensagem de erro do formulário -->
+      </div>
+      <div class="modal-footer"> <!-- Rodapé da janela -->
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button> <!-- Fecha sem salvar -->
+        <button type="submit" class="btn btn-primary">Salvar aluno</button> <!-- Envia o formulário -->
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Aviso temporário (toast) no canto da tela -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3"> <!-- Posição fixa: canto inferior direito -->
+  <div id="toastMsg" class="toast align-items-center border-0" role="alert"> <!-- O aviso em si -->
+    <div class="d-flex">
+      <div class="toast-body" id="toastTxt"></div> <!-- Texto do aviso (JS) -->
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button> <!-- Botão X -->
+    </div>
+  </div>
+</div>
+
+<!-- O Bootstrap precisa carregar antes do nosso script, pois usamos modal e toast -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script> // Início do JavaScript da página
+  // ---------- Sessão do professor ----------
+  // A página de login deve gravar { nome, email } em sessionStorage["professorLogado"].
+  let professor = JSON.parse(sessionStorage.getItem("professorLogado")); // Lê o professor logado (texto JSON -> objeto)
+  if (!professor) { // Se ninguém fez login...
+    // Para a demonstração funcionar sozinha, usamos um professor de exemplo.
+    // Em produção, troque esta linha por: window.location.href = "login.html";
+    professor = { nome: "Professor(a) Demonstração", email: "professor@educonnect.com" };
+  }
+  document.getElementById("nomeProf").textContent = professor.nome; // Mostra o nome na barra superior
+
+  // ---------- Constantes (iguais às do perfil.html) ----------
+  const MESES = ["Fev", "Mar", "Abr", "Mai", "Jun", "Ago", "Set", "Out", "Nov", "Dez"]; // Meses letivos (julho é recesso)
+  const DISC = ["Português", "Matemática", "História", "Ciências"]; // Disciplinas
+  const AULAS_MES = { "Português": 16, "Matemática": 16, "História": 8, "Ciências": 8 }; // Aulas por mês de cada disciplina
+  const N_BIM = 3; // Quantidade de bimestres exibidos no perfil
+  const DOC_PADRAO = [ // Documentos exigidos pela escola
+    "Certidão de nascimento", "RG do aluno", "CPF do aluno", "Comprovante de residência",
+    "Histórico escolar", "Cartão de vacinação", "Foto 3x4", "Termo de autorização de imagem"
+  ];
+
+  // ---------- "Banco de dados" do navegador (demonstração) ----------
+  // O perfil.html lê esta mesma chave. Em produção, vira chamadas à API/MySQL.
+  const CHAVE = "educonnect_banco"; // Nome sob o qual os dados ficam no localStorage
+
+  const vazio = n => Array(n).fill(null); // Cria uma lista de n posições com null (= sem lançamento)
+
+  function novoAno() { // Cria a estrutura vazia de um ano letivo
+    const o = { bim: {}, notas: {}, faltas: {} }; // Três grupos de dados
+    DISC.forEach(d => { // Para cada disciplina...
+      o.bim[d] = vazio(N_BIM);          // ...notas bimestrais vazias
+      o.notas[d] = vazio(MESES.length); // ...notas mensais vazias
+      o.faltas[d] = vazio(MESES.length); // ...faltas mensais vazias
+    });
+    return o; // Devolve a estrutura pronta
+  }
+
+  function novosDocs() { // Lista de documentos, todos pendentes
+    return DOC_PADRAO.map(nome => ({ nome, situacao: "pendente", data: null }));
+  }
+
+  function semente() { // Dados de exemplo (os mesmos números do perfil.html)
+    const ana = { // Aluna de exemplo
+      id: 1, nome: "Ana Souza", email: "ana@aluno.educonnect.com", // Identificação e e-mail
+      turma: "8º Ano A", matricula: "2026001",                      // Turma e matrícula
+      anos: { "2025": novoAno(), "2026": novoAno() },               // Anos letivos vazios
+      documentos: novosDocs()                                       // Documentos pendentes
+    };
+    ana.anos["2025"].notas = { // Notas mensais de 2025
+      "Português":  [7.5, 8.0, 7.0, 8.5, 8.0, 7.5, 8.0, 9.0, 8.5, 9.0],
+      "Matemática": [6.0, 6.5, 7.0, 6.0, 5.5, 6.5, 7.0, 6.5, 7.5, 7.0],
+      "História":   [8.5, 9.0, 8.0, 8.5, 9.0, 8.0, 8.5, 9.0, 8.5, 9.0],
+      "Ciências":   [5.5, 6.0, 5.0, 6.5, 6.0, 5.5, 6.5, 7.0, 6.0, 6.5]
+    };
+    ana.anos["2025"].faltas = { // Faltas mensais de 2025
+      "Português":  [0, 1, 0, 2, 1, 0, 1, 0, 2, 1],
+      "Matemática": [1, 0, 2, 2, 0, 1, 1, 0, 2, 2],
+      "História":   [0, 0, 1, 0, 1, 0, 0, 1, 0, 0],
+      "Ciências":   [1, 0, 1, 2, 2, 1, 0, 1, 1, 2]
+    };
+    ana.anos["2026"].notas = { // Notas mensais de 2026 (null = mês que ainda não aconteceu)
+      "Português":  [8.0, 7.5, 8.5, 9.0, 8.0, 8.5, 9.0, null, null, null],
+      "Matemática": [6.5, 7.0, 6.0, 5.5, 6.5, 7.0, 6.0, null, null, null],
+      "História":   [9.0, 8.5, 8.0, 9.0, 8.5, 8.0, 8.5, null, null, null],
+      "Ciências":   [5.0, 6.0, 5.5, 4.5, 5.5, 6.0, 5.0, null, null, null]
+    };
+    ana.anos["2026"].faltas = { // Faltas mensais de 2026
+      "Português":  [0, 0, 1, 0, 2, 1, 0, null, null, null],
+      "Matemática": [0, 1, 0, 1, 1, 0, 2, null, null, null],
+      "História":   [0, 0, 0, 1, 0, 0, 1, null, null, null],
+      "Ciências":   [1, 1, 0, 0, 2, 1, 0, null, null, null]
+    };
+    ana.anos["2026"].bim = { // Notas bimestrais de 2026
+      "Português": [8.0, 7.5, 9.0], "Matemática": [6.5, 7.0, 5.5],
+      "História": [9.0, 8.5, 8.0],  "Ciências": [5.0, 6.0, 4.5]
+    };
+    const datas = ["2026-02-03", "2026-02-03", "2026-02-03", "2026-02-05", "2026-02-10", "2026-09-18", "2026-02-05", null]; // Datas de entrega
+    const sit = ["entregue", "entregue", "entregue", "entregue", "entregue", "analise", "entregue", "pendente"]; // Situações
+    ana.documentos.forEach((d, i) => { d.situacao = sit[i]; d.data = datas[i]; }); // Aplica situação e data a cada documento
+
+    const bruno = { // Segundo aluno de exemplo, sem lançamentos
+      id: 2, nome: "Bruno Lima", email: "bruno@aluno.educonnect.com",
+      turma: "8º Ano A", matricula: "2026002",
+      anos: { "2025": novoAno(), "2026": novoAno() }, documentos: novosDocs()
+    };
+    return { anos: [2025, 2026], alunos: [ana, bruno] }; // Devolve o banco completo
+  }
+
+  function carregar() { // Lê o banco do localStorage
+    try { // try/catch evita erro se o dado estiver corrompido
+      const b = JSON.parse(localStorage.getItem(CHAVE)); // Converte o texto salvo em objeto
+      if (b && Array.isArray(b.alunos) && Array.isArray(b.anos)) return b; // Usa o banco se estiver válido
+    } catch (e) { /* dado corrompido: recomeça com o exemplo */ }
+    return semente(); // Sem dados válidos: usa o exemplo
+  }
+
+  function gravar() { localStorage.setItem(CHAVE, JSON.stringify(banco)); } // Salva o banco como texto JSON
+
+  let banco = carregar(); // Banco em memória
+  gravar();               // Garante que o exemplo seja salvo na primeira visita
+
+  // ---------- Estado da tela ----------
+  let ano = Math.max(...banco.anos); // Começa no ano letivo mais recente
+  let idSel = null;                  // Id do aluno selecionado (null = nenhum)
+
+  // ---------- Funções auxiliares ----------
+  const $ = id => document.getElementById(id); // Atalho para buscar um elemento pelo id
+  const esc = t => String(t).replace(/[&<>"']/g, c => ({ // Troca caracteres perigosos por códigos HTML (evita injeção de HTML)
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const fmt = n => (n === null || n === undefined ? "—" : n.toFixed(1).replace(".", ",")); // Nota no formato brasileiro (8,5)
+
+  function media(lista) { // Média ignorando valores null
+    const v = lista.filter(n => n !== null);                            // Separa só os números
+    return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;   // Soma/quantidade, ou null se não houver nenhum
+  }
+
+  const alunoAtual = () => banco.alunos.find(a => a.id === idSel) || null; // Devolve o aluno selecionado
+
+  function dadosAno(a) { // Devolve os dados do ano selecionado, criando se não existirem
+    if (!a.anos[ano]) a.anos[ano] = novoAno();
+    return a.anos[ano];
+  }
+
+  function hojeISO() { // Data de hoje no formato AAAA-MM-DD (usa a data local, sem erro de fuso)
+    const d = new Date();                                  // Data e hora atuais
+    return d.getFullYear() + "-" +                         // Ano
+           String(d.getMonth() + 1).padStart(2, "0") + "-" + // Mês com 2 dígitos (janeiro = 0, por isso +1)
+           String(d.getDate()).padStart(2, "0");           // Dia com 2 dígitos
+  }
+
+  function aviso(msg, tipo) { // Mostra um aviso temporário na tela
+    const el = $("toastMsg"); // Elemento do aviso
+    el.className = "toast align-items-center border-0 text-bg-" + (tipo || "success"); // Cor: success, danger, warning...
+    $("toastTxt").textContent = msg; // Define o texto
+    bootstrap.Toast.getOrCreateInstance(el, { delay: 3500 }).show(); // Exibe por 3,5 segundos
+  }
+
+  // ---------- Seletores do topo ----------
+  function renderAnos() { // Preenche o seletor de ano letivo
+    const s = $("anoLetivo");
+    s.replaceChildren(); // Limpa as opções antigas
+    [...banco.anos].sort((a, b) => b - a).forEach(a => { // Anos do mais novo para o mais antigo
+      const op = document.createElement("option"); // Cria uma opção
+      op.value = a;          // Valor da opção
+      op.textContent = a;    // Texto exibido
+      s.appendChild(op);     // Adiciona ao seletor
+    });
+    s.value = ano; // Seleciona o ano atual
+  }
+
+  function renderFiltroTurma() { // Preenche o filtro de turmas
+    const atual = $("filtroTurma").value || "todas"; // Lembra a escolha atual
+    const turmas = [...new Set(banco.alunos.map(a => a.turma))].sort(); // Turmas sem repetição, em ordem alfabética
+    $("filtroTurma").innerHTML = "<option value='todas'>Todas as turmas</option>" + // Primeira opção fixa
+      turmas.map(t => "<option value='" + esc(t) + "'>" + esc(t) + "</option>").join(""); // Uma opção por turma
+    $("filtroTurma").value = turmas.includes(atual) ? atual : "todas"; // Mantém a escolha se ainda existir
+  }
+
+  // ---------- Lista de alunos ----------
+  function renderLista() { // Desenha a lista de alunos conforme busca e filtro
+    const termo = $("busca").value.trim().toLowerCase(); // Texto digitado na busca
+    const turma = $("filtroTurma").value;                // Turma escolhida no filtro
+    const lista = $("listaAlunos");
+    lista.replaceChildren(); // Limpa a lista
+
+    const filtrados = banco.alunos
+      .filter(a => (turma === "todas" || a.turma === turma) &&  // Confere a turma
+                   (a.nome.toLowerCase().includes(termo) ||     // Confere o nome...
+                    a.matricula.toLowerCase().includes(termo))) // ...ou a matrícula
+      .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));   // Ordem alfabética em português
+
+    if (!filtrados.length) { // Nenhum aluno encontrado
+      lista.innerHTML = "<div class='text-muted small p-2'>Nenhum aluno encontrado.</div>";
+      return; // Interrompe a função
+    }
+    filtrados.forEach(a => { // Para cada aluno encontrado...
+      const b = document.createElement("button"); // ...cria um botão
+      b.type = "button"; // Evita enviar formulário
+      b.className = "list-group-item list-group-item-action aluno-item" + (a.id === idSel ? " active" : ""); // Destaca o selecionado
+      b.innerHTML = "<div class='fw-semibold'>" + esc(a.nome) + "</div>" + // Nome em destaque
+                    "<small class='text-muted'>" + esc(a.turma) + " • Matrícula " + esc(a.matricula) + "</small>"; // Turma e matrícula
+      b.addEventListener("click", () => { idSel = a.id; renderLista(); renderEditor(); }); // Ao clicar, seleciona e atualiza a tela
+      lista.appendChild(b); // Adiciona à lista
+    });
+  }
+
+  // ---------- Editor do aluno ----------
+  function campo(tipo, di, i, valor, max, step) { // Monta o HTML de um campo numérico
+    return "<input type='number' class='form-control form-control-sm campo' " + // Campo numérico com estilo
+           "data-tipo='" + tipo + "' " +  // Tipo do dado: bim, nota ou falta
+           "data-d='" + di + "' " +       // Posição da disciplina na lista DISC
+           "data-i='" + i + "' " +        // Posição do mês/bimestre
+           "min='0' max='" + max + "' step='" + step + "' " + // Limites e passo
+           "value='" + (valor === null ? "" : valor) + "'>";  // Valor atual (vazio se null)
+  }
+
+  function renderEditor() { // Desenha o editor do aluno selecionado
+    const a = alunoAtual();
+    $("editorVazio").classList.toggle("d-none", !!a); // Esconde a mensagem se há aluno selecionado
+    $("editor").classList.toggle("d-none", !a);       // Mostra o editor se há aluno selecionado
+    if (!a) return;                                   // Sem aluno: nada mais a fazer
+
+    const d = dadosAno(a); // Dados do ano letivo atual
+    $("edNome").textContent = a.nome; // Nome no cabeçalho do editor
+    $("edDetalhes").textContent = a.email + " • " + a.turma + " • Matrícula " + a.matricula + " • Ano letivo " + ano; // Detalhes
+
+    // Notas bimestrais: uma linha por disciplina
+    $("corpoBim").innerHTML = DISC.map((disc, di) =>
+      "<tr><td class='fw-semibold'>" + disc + "</td>" + // Nome da disciplina
+      d.bim[disc].map((n, i) => "<td>" + campo("bim", di, i, n, 10, 0.1) + "</td>").join("") + // Um campo por bimestre
+      "<td class='fw-bold' id='mediaBim" + di + "'>—</td></tr>").join(""); // Célula da média (calculada depois)
+
+    // Notas mensais
+    $("cabecaMes").innerHTML = "<tr><th>Disciplina</th>" + MESES.map(m => "<th>" + m + "</th>").join("") + "</tr>"; // Cabeçalho com os meses
+    $("corpoMes").innerHTML = DISC.map((disc, di) =>
+      "<tr><td class='fw-semibold'>" + disc + "</td>" +
+      d.notas[disc].map((n, i) => "<td>" + campo("nota", di, i, n, 10, 0.1) + "</td>").join("") + "</tr>").join(""); // Um campo por mês
+
+    // Faltas mensais
+    $("cabecaFaltas").innerHTML = "<tr><th>Disciplina</th>" + MESES.map(m => "<th>" + m + "</th>").join("") + "</tr>"; // Cabeçalho
+    $("corpoFaltas").innerHTML = DISC.map((disc, di) =>
+      "<tr><td class='fw-semibold'>" + disc + " <small class='text-muted'>(" + AULAS_MES[disc] + " aulas/mês)</small></td>" + // Disciplina e total de aulas
+      d.faltas[disc].map((n, i) => "<td>" + campo("falta", di, i, n, AULAS_MES[disc], 1) + "</td>").join("") + "</tr>").join(""); // Campo inteiro, máximo = aulas do mês
+
+    // Documentos
+    $("corpoDocs").innerHTML = a.documentos.map((doc, i) =>
+      "<tr><td class='fw-semibold'>" + esc(doc.nome) + "</td>" + // Nome do documento
+      "<td><select class='form-select form-select-sm doc-sit' data-i='" + i + "'>" + // Seletor de situação
+      ["entregue|Entregue", "analise|Em análise", "pendente|Pendente"].map(o => { // Três opções possíveis
+        const [v, t] = o.split("|"); // Separa valor e texto
+        return "<option value='" + v + "'" + (doc.situacao === v ? " selected" : "") + ">" + t + "</option>"; // Marca a situação atual
+      }).join("") + "</select></td>" +
+      "<td><input type='date' class='form-control form-control-sm doc-data' data-i='" + i + "' value='" + (doc.data || "") + "'></td></tr>").join(""); // Campo de data
+
+    atualizarMediasBim(); // Calcula as médias da aba bimestral
+    renderResumo(a);      // Atualiza os cartões-resumo
+  }
+
+  function atualizarMediasBim() { // Calcula a média de cada disciplina ao digitar
+    DISC.forEach((_, di) => { // Para cada disciplina...
+      const vals = [...document.querySelectorAll("#corpoBim input[data-d='" + di + "']")] // ...pega seus campos
+        .map(el => el.value === "" ? null : Number(el.value)); // Converte em número (vazio = null)
+      const m = media(vals);       // Calcula a média
+      const cel = $("mediaBim" + di); // Célula onde a média aparece
+      cel.textContent = fmt(m);    // Mostra a média
+      cel.className = "fw-bold" + (m !== null && m < 6 ? " nota-baixa" : ""); // Destaca se abaixo de 6
+    });
+  }
+
+  function renderResumo(a) { // Cartões-resumo (mesmo cálculo do perfil.html)
+    const d = dadosAno(a);
+    let aulas = 0, faltas = 0; // Totais acumulados
+    MESES.forEach((_, i) => { // Para cada mês...
+      if (d.faltas[DISC[0]][i] === null) return; // ...ignora meses que ainda não aconteceram
+      aulas += DISC.reduce((s, x) => s + AULAS_MES[x], 0);       // Soma as aulas do mês
+      faltas += DISC.reduce((s, x) => s + (d.faltas[x][i] || 0), 0); // Soma as faltas do mês
+    });
+    $("resFreq").textContent = aulas ? ((aulas - faltas) / aulas * 100).toFixed(1).replace(".", ",") + "%" : "—"; // Frequência em %
+
+    const m = media(DISC.map(x => media(d.notas[x])).filter(n => n !== null)); // Média geral das disciplinas
+    $("resMedia").textContent = fmt(m); // Mostra a média
+
+    const recebidos = a.documentos.filter(x => x.situacao !== "pendente").length; // Documentos já recebidos
+    $("resDocs").textContent = recebidos + " de " + a.documentos.length; // Ex.: "7 de 8"
+  }
+
+  // ---------- Salvar lançamentos ----------
+  function salvarLancamentos() { // Executada ao clicar em "Salvar alterações"
+    const a = alunoAtual();
+    if (!a) return; // Sem aluno selecionado: nada a salvar
+    const d = dadosAno(a);
+    const alteracoes = []; // Lista de valores válidos a gravar
+    let invalido = 0;      // Contador de campos com erro
+
+    // 1) Valida todos os campos antes de gravar qualquer coisa.
+    document.querySelectorAll("#editor .campo").forEach(el => { // Percorre todos os campos numéricos
+      el.classList.remove("is-invalid"); // Remove marcação de erro anterior
+      const disc = DISC[+el.dataset.d];  // Descobre a disciplina do campo
+      const tipo = el.dataset.tipo;      // bim, nota ou falta
+      const v = el.value === "" ? null : Number(el.value); // Vazio vira null
+      const max = tipo === "falta" ? AULAS_MES[disc] : 10; // Limite máximo do campo
+      if (v !== null && (isNaN(v) || v < 0 || v > max || (tipo === "falta" && !Number.isInteger(v)))) { // Valor inválido?
+        el.classList.add("is-invalid"); // Marca o campo em vermelho
+        invalido++;                     // Conta o erro
+        return;                         // Vai para o próximo campo
+      }
+      alteracoes.push({ tipo, disc, i: +el.dataset.i, v }); // Guarda o valor válido
+    });
+
+    if (invalido) { // Se houve erro, não grava nada
+      aviso(invalido + " campo(s) com valor inválido (notas: 0 a 10; faltas: número inteiro até o total de aulas).", "danger");
+      return;
+    }
+
+    // 2) Aplica as alterações.
+    alteracoes.forEach(x => { // Para cada valor válido...
+      const alvo = x.tipo === "bim" ? d.bim : (x.tipo === "nota" ? d.notas : d.faltas); // ...escolhe onde gravar
+      alvo[x.disc][x.i] = x.v; // Grava o valor
+    });
+
+    // Documentos: preenche a data de hoje se foi recebido e está sem data; limpa se voltou a pendente.
+    document.querySelectorAll(".doc-sit").forEach(sel => { // Para cada seletor de situação...
+      const doc = a.documentos[+sel.dataset.i]; // ...encontra o documento
+      const campoData = document.querySelector(".doc-data[data-i='" + sel.dataset.i + "']"); // ...e seu campo de data
+      doc.situacao = sel.value; // Grava a situação
+      doc.data = sel.value === "pendente" ? null : (campoData.value || hojeISO()); // Pendente = sem data; senão usa a data ou hoje
+    });
+
+    gravar();        // Salva o banco inteiro
+    renderEditor();  // Redesenha o editor com os dados salvos
+    aviso("Informações de " + a.nome + " salvas. Já aparecem no perfil do aluno."); // Confirma ao professor
+  }
+
+  // ---------- Cadastro / edição de aluno ----------
+  const modalAluno = new bootstrap.Modal($("modalAluno")); // Controla a janela de cadastro
+
+  function abrirModal(a) { // Abre a janela: vazia (novo) ou preenchida (editar)
+    $("tituloModal").textContent = a ? "Editar aluno" : "Novo aluno"; // Título
+    $("fId").value = a ? a.id : "";                 // Id oculto
+    $("fNome").value = a ? a.nome : "";             // Nome
+    $("fEmail").value = a ? a.email : "";           // E-mail
+    $("fTurma").value = a ? a.turma : ($("filtroTurma").value !== "todas" ? $("filtroTurma").value : ""); // Turma (sugere a do filtro)
+    $("fMatricula").value = a ? a.matricula : "";   // Matrícula
+    $("erroForm").classList.add("d-none");          // Esconde mensagem de erro
+    modalAluno.show();                              // Mostra a janela
+  }
+
+  $("formAluno").addEventListener("submit", e => { // Quando o formulário é enviado...
+    e.preventDefault(); // ...impede o recarregamento da página
+    const dados = { // Lê os campos
+      nome: $("fNome").value.trim(), email: $("fEmail").value.trim(),
+      turma: $("fTurma").value.trim(), matricula: $("fMatricula").value.trim()
+    };
+    const id = $("fId").value ? Number($("fId").value) : null; // Id do aluno (null = novo)
+    const erro = $("erroForm");
+    erro.classList.remove("d-none"); // Prepara a área de erro
+
+    if (!dados.nome || !dados.email || !dados.turma || !dados.matricula) { erro.textContent = "Preencha todos os campos."; return; } // Campos obrigatórios
+    if (!/^\S+@\S+\.\S+$/.test(dados.email)) { erro.textContent = "Informe um e-mail válido."; return; } // Formato do e-mail
+    if (banco.alunos.some(a => a.matricula === dados.matricula && a.id !== id)) { erro.textContent = "Já existe um aluno com esta matrícula."; return; } // Matrícula única
+    erro.classList.add("d-none"); // Tudo certo: esconde o erro
+
+    if (id) { // Editando um aluno existente
+      Object.assign(banco.alunos.find(a => a.id === id), dados); // Atualiza os dados
+    } else { // Cadastrando um novo aluno
+      const novoId = banco.alunos.reduce((m, a) => Math.max(m, a.id), 0) + 1; // Próximo id livre
+      const novo = { id: novoId, ...dados, anos: {}, documentos: novosDocs() }; // Cria o aluno
+      banco.anos.forEach(y => { novo.anos[y] = novoAno(); }); // Cria os anos letivos vazios
+      banco.alunos.push(novo); // Adiciona ao banco
+      idSel = novoId;          // Já seleciona o novo aluno
+    }
+    gravar();            // Salva
+    modalAluno.hide();   // Fecha a janela
+    renderFiltroTurma(); // Atualiza o filtro (pode haver turma nova)
+    renderLista();       // Atualiza a lista
+    renderEditor();      // Atualiza o editor
+    aviso("Aluno salvo com sucesso."); // Confirma
+  });
+
+  $("btnNovoAluno").addEventListener("click", () => abrirModal(null));           // Botão "+ Novo aluno"
+  $("btnEditarAluno").addEventListener("click", () => abrirModal(alunoAtual())); // Botão "Editar dados"
+
+  $("btnExcluirAluno").addEventListener("click", () => { // Botão "Excluir"
+    const a = alunoAtual();
+    if (!a) return;
+    if (!confirm("Excluir " + a.nome + " e todas as notas, faltas e documentos registrados? Esta ação não pode ser desfeita.")) return; // Pede confirmação
+    banco.alunos = banco.alunos.filter(x => x.id !== a.id); // Remove o aluno
+    idSel = null;        // Nenhum aluno selecionado
+    gravar();            // Salva
+    renderFiltroTurma(); // Atualiza filtro
+    renderLista();       // Atualiza lista
+    renderEditor();      // Mostra a mensagem de editor vazio
+    aviso("Aluno excluído.", "secondary"); // Confirma
+  });
+
+  // ---------- Ano letivo ----------
+  $("btnNovoAno").addEventListener("click", () => { // Botão "+ Ano"
+    const resp = prompt("Informe o novo ano letivo (ex.: " + (Math.max(...banco.anos) + 1) + "):"); // Pergunta o ano
+    if (resp === null) return; // Cancelou
+    const y = Number(resp);
+    if (!Number.isInteger(y) || y < 2000 || y > 2100) { aviso("Ano inválido.", "danger"); return; } // Valida o ano
+    if (banco.anos.includes(y)) { aviso("Este ano letivo já existe.", "warning"); return; } // Evita duplicar
+    banco.anos.push(y); // Adiciona o ano
+    banco.alunos.forEach(a => { a.anos[y] = novoAno(); }); // Cria o ano vazio para todos os alunos
+    ano = y;            // Seleciona o novo ano
+    gravar();           // Salva
+    renderAnos();       // Atualiza o seletor
+    renderEditor();     // Atualiza o editor
+    aviso("Ano letivo " + y + " criado.");
+  });
+
+  // ---------- Demais eventos ----------
+  $("anoLetivo").addEventListener("change", () => { ano = Number($("anoLetivo").value); renderEditor(); }); // Trocou o ano: redesenha
+  $("busca").addEventListener("input", renderLista);           // Digitou na busca: refiltra a lista
+  $("filtroTurma").addEventListener("change", renderLista);    // Mudou a turma: refiltra a lista
+  $("btnSalvar").addEventListener("click", salvarLancamentos); // Botão "Salvar alterações"
+  $("corpoBim").addEventListener("input", atualizarMediasBim); // Digitou nota bimestral: recalcula a média
+
+  $("corpoDocs").addEventListener("change", e => { // Mudou algo na tabela de documentos
+    if (!e.target.classList.contains("doc-sit")) return; // Só interessa a mudança de situação
+    const data = document.querySelector(".doc-data[data-i='" + e.target.dataset.i + "']"); // Campo de data da mesma linha
+    if (e.target.value === "pendente") data.value = "";  // Pendente: limpa a data
+    else if (!data.value) data.value = hojeISO();        // Entregue/em análise sem data: coloca a de hoje
+  });
+
+  $("btnSair").addEventListener("click", () => { // Botão "Sair"
+    sessionStorage.removeItem("professorLogado"); // Apaga a sessão
+    window.location.href = "login.html";          // Volta ao login
+  });
+
+  // ---------- Primeira exibição ----------
+  renderAnos();        // Preenche o seletor de ano
+  renderFiltroTurma(); // Preenche o filtro de turmas
+  renderLista();       // Desenha a lista de alunos
+  renderEditor();      // Mostra o editor (ou a mensagem de vazio)
+</script>
+</body>
+</html>
