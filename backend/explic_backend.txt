@@ -1,0 +1,116 @@
+Criei o backend em Node.js com Express e MySQL do alwaysdata (server.js, package.json, .env.example e README.md). Não rodei o servidor nem conectei ao banco, então nada foi testado.
+
+O que ele faz
+
+Login: login.html passa a usar POST /api/auth/login, que devolve um token JWT. As senhas ficam com bcrypt, e o login tem limite de tentativas.
+Esqueci a senha: valida e-mail e CPF e registra o pedido, mas não grava o CPF. O envio do e-mail ainda não está implementado (há um TODO no código).
+Alunos (painel do professor): cria, lista, edita e exclui alunos. Ao cadastrar, cria o login do aluno com uma senha provisória, devolvida uma única vez, e os 8 documentos como pendentes.
+Notas e faltas: GET e PUT /api/alunos/:id/anos/:ano usam o mesmo formato {bim, notas, faltas} que as páginas já usam, com null para o que ainda não foi lançado. O servidor valida notas de 0 a 10 e faltas dentro do total de aulas do mês.
+Documentos e anos letivos: o professor atualiza situação e data de entrega, e cria novos anos letivos.
+Secretaria: POST /api/solicitacoes é público e devolve um protocolo real. O professor consulta, muda o status e apaga as solicitações.
+Permissões: o aluno só vê os próprios dados. Só o professor altera notas, faltas e documentos.
+
+As tabelas são criadas sozinhas na primeira execução. Com SEED_DEMO=true e o banco vazio, ele cria o aluno aluno@escola.com.br e o professor professor@educonnect.com, ambos com senha 123456. Troque essas senhas antes de usar dados reais.
+
+Para colocar no ar
+
+No painel do alwaysdata, crie o banco MySQL e um usuário para ele.
+Copie .env.example para .env e preencha DB_*, JWT_SECRET e CORS_ORIGIN.
+Rode npm install e npm start.
+Mantenha o backend fora da pasta do site, para o .env nunca ficar acessível por URL. Para o Node servir o site junto, aponte FRONTEND_DIR para a pasta que tem Indexescola.html e pages/.
+
+O README.md traz a tabela completa de rotas e o passo a passo de publicação no alwaysdata.
+
+Ainda falta no frontend: trocar os dados fixos por chamadas fetch. O login.html hoje compara com o usuário de demonstração no navegador, e perfil.html, desempenho.html, painel-professor.html e secretaria.html usam DADOS fixos ou localStorage. O README tem exemplos de fetch para o login e para as rotas com token. Posso adaptar essas páginas se você quiser.
+
+
+# EduConnect — Backend (Node.js + MySQL no alwaysdata)
+
+## 1. Banco de dados no alwaysdata
+1. Painel alwaysdata → **Bancos de dados → MySQL → Adicionar um banco** (ex.: `SUACONTA_educonnect`).
+2. Em **Usuários**, crie um usuário com permissão total nesse banco.
+3. Anote o host (`mysql-SUACONTA.alwaysdata.net`), usuário, senha e nome do banco.
+
+As tabelas são criadas automaticamente na primeira execução.
+
+## 2. Rodando
+```bash
+cp .env.example .env     # preencha DB_*, JWT_SECRET e CORS_ORIGIN
+npm install
+npm start
+```
+Teste: `GET /api/saude` deve retornar `{"ok":true}`.
+
+> Para testar do seu computador, o alwaysdata precisa aceitar conexão remota ao MySQL
+> (por padrão aceita; confira a opção de acesso remoto/IP no painel).
+
+## 3. Publicando no alwaysdata
+1. Envie o backend (sem `.env` e `node_modules`) por SSH/SFTP/Git, por exemplo para `~/educonnect/backend`.
+2. Envie o site (`Indexescola.html` e `pages/`) para outra pasta, por exemplo `~/educonnect/site`.
+3. No SSH: `cd ~/educonnect/backend && npm install --omit=dev` e crie o `.env`.
+4. **Web → Sites → Adicionar**: tipo **Node.js**, comando `node server.js`, pasta de trabalho do backend.
+   O alwaysdata define `PORT` e `IP` automaticamente.
+5. Em `.env`, `FRONTEND_DIR=../site` faz o Node servir o site e a API no mesmo endereço (sem problemas de CORS).
+6. Após o primeiro acesso, ponha `SEED_DEMO=false`.
+
+## 4. Rotas
+| Método | Rota | Quem | Uso |
+|---|---|---|---|
+| POST | `/api/auth/login` | público | `{email, senha}` → `{token, usuario}` |
+| POST | `/api/auth/recuperar-senha` | público | `{email, cpf}` |
+| PUT | `/api/auth/senha` | logado | `{senhaAtual, novaSenha}` |
+| GET/POST | `/api/anos` | logado / professor | lista / cria ano letivo `{ano}` |
+| GET/POST | `/api/alunos` | professor | lista (`?busca=&turma=`) / cadastra |
+| GET | `/api/alunos/:id` | aluno (próprio) ou professor | dados do aluno |
+| PUT/DELETE | `/api/alunos/:id` | professor | edita / exclui |
+| GET | `/api/alunos/:id/anos/:ano` | aluno (próprio) ou professor | `{bim, notas, faltas}` |
+| PUT/DELETE | `/api/alunos/:id/anos/:ano` | professor | grava / limpa lançamentos do ano |
+| GET | `/api/alunos/:id/documentos` | aluno (próprio) ou professor | documentos |
+| PUT | `/api/alunos/:id/documentos` | professor | `[{nome, situacao, data}]` |
+| POST | `/api/solicitacoes` | público | formulário da secretaria → `{protocolo}` |
+| GET/PATCH/DELETE | `/api/solicitacoes[/:id]` | professor | acompanhar / mudar status / apagar |
+
+Rotas protegidas exigem o cabeçalho `Authorization: Bearer <token>`.
+
+## 5. Como ligar o frontend
+Em cada página, troque os dados fixos por chamadas `fetch`. Exemplo de login (`login.html`):
+
+```js
+const resp = await fetch("/api/auth/login", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ email: email.value.trim(), senha: senha.value })
+});
+const dados = await resp.json();
+if (!resp.ok) { /* mostrar dados.erro */ }
+else {
+  sessionStorage.setItem("token", dados.token);
+  if (dados.usuario.perfil === "professor") {
+    sessionStorage.setItem("professorLogado", JSON.stringify(dados.usuario));
+    location.href = "painel-professor.html";
+  } else {
+    sessionStorage.setItem("usuarioLogado", JSON.stringify(dados.usuario));
+    location.href = "perfil.html";
+  }
+}
+```
+
+Exemplo autenticado (perfil/desempenho do aluno):
+
+```js
+const token = sessionStorage.getItem("token");
+const r = await fetch(`/api/alunos/${usuario.alunoId}/anos/2026`, {
+  headers: { Authorization: "Bearer " + token }
+});
+const { bim, notas, faltas } = await r.json(); // mesmo formato do objeto DADOS
+```
+
+No painel do professor, "Salvar alterações" vira `PUT /api/alunos/:id/anos/:ano` (corpo `{bim, notas, faltas}`) e `PUT /api/alunos/:id/documentos`.
+
+## 6. Segurança
+- Senhas com bcrypt; sessão por JWT; limite de tentativas no login.
+- Todas as consultas usam parâmetros (`?`), sem concatenar texto do usuário em SQL.
+- Alunos só enxergam os próprios dados; só professores alteram notas, faltas e documentos.
+- O CPF da recuperação de senha é validado, mas não é gravado.
+- Mantenha o backend **fora** da pasta do site, para o `.env` nunca ficar acessível por URL.
+- Troque as senhas de demonstração (`123456`) antes de usar com dados reais.
